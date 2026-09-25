@@ -1,0 +1,1046 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>通道塔防 v10.4</title>
+
+  <style>:root{
+  --bg:#1a1a2e;--panel-bg:#16213e;--text:#e0e0e0;--gold:#f0c040;
+  --danger:#e04040;--success:#40c040;--accent:#e08020;
+  --nav-height:48px;--page-bg:#0d1117;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--page-bg);
+  font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  display:flex;flex-direction:column;height:100vh;
+  user-select:none;overflow:hidden;touch-action:none;
+}
+.theme-default{--bg:#1a1a2e;--panel-bg:#16213e;--gold:#f0c040;--page-bg:#0d1117;}
+.theme-ocean{--bg:#1e3a5a;--panel-bg:#2c3e50;--gold:#FFD700;--page-bg:#FFEBCD;}
+.theme-field{--bg:#bca169;--panel-bg:#c39a1e;--gold:#4a3500;--page-bg:#97dd25;}
+.theme-mono{--bg:#2a2a2a;--panel-bg:#3a3a3a;--gold:#cccccc;--page-bg:#1a1a1a;}
+.theme-caramelDark{--bg:#605077;--panel-bg:#4E4161;--gold:#FFD700;--page-bg:#605077;}
+.theme-caramelLight{--bg:#FDF4EF;--panel-bg:#AD7467;--gold:#FFFFFF;--page-bg:#FDF4EF;}
+.theme-pvzDay{--bg:#b7aa00;--panel-bg:#996c33;--gold:#4a2800;--page-bg:#aaaaaa;}
+.theme-pvzNight{--bg:#003c24;--panel-bg:#996c33;--gold:#FFD700;--page-bg:#535353;}
+
+.navbar{position:relative;z-index:100;background:var(--panel-bg);border-bottom:1.5px solid #334;height:var(--nav-height);display:flex;align-items:center;justify-content:space-between;padding:0 10px;ga[...]
+.navbar-left{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.navbar-title{font-weight:700;font-size:1.1em;color:var(--gold);letter-spacing:1px;white-space:nowrap;}
+.navbar-info{display:flex;align-items:center;gap:8px;font-size:0.75em;color:#ccc;flex-wrap:nowrap;overflow-x:auto;flex-shrink:1;min-width:0;padding:2px 4px;}
+.navbar-info span{white-space:nowrap;}
+.navbar-right{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.val-danger{color:#e04040;font-weight:bold;}
+.val-gold{color:var(--gold);font-weight:bold;}
+.val-crystal{color:#aa88ff;font-weight:bold;}
+.nav-btn{background:#2a3a50;color:#ddd;border:1px solid #445;padding:4px 9px;border-radius:14px;cursor:pointer;font-size:0.72em;transition:0.2s;font-family:inherit;white-space:nowrap;}
+.nav-btn:hover{background:#354860;border-color:#668;color:#fff;}
+.nav-btn.active-speed{border-color:var(--gold)!important;background:#3a4a30;color:var(--gold);}
+.nav-btn.active-mode{border-color:#ff8800!important;background:#4a3020;color:#ffaa00;}
+.nav-btn.dev-active{border-color:#ff00ff!important;background:#3a0040;color:#ff66ff;}
+
+.dropdown{position:relative;}
+.dropdown-btn{background:#2a3a50;color:#ddd;border:1px solid #445;padding:4px 10px;border-radius:14px;cursor:pointer;font-size:0.75em;font-family:inherit;white-space:nowrap;transition:0.2s;}
+.dropdown-btn:hover{background:#354860;border-color:#668;color:#fff;}
+.dropdown-menu{position:absolute;top:calc(100% + 6px);left:0;background:#1e1e30;border:2px solid #555;border-radius:10px;min-width:200px;max-height:420px;overflow-y:auto;z-index:300;display:none;flex-[...]
+.dropdown-menu.align-right{left:auto;right:0;}
+.dropdown-menu.show{display:flex;}
+.dropdown-menu .nav-btn{width:100%;text-align:left;border-radius:6px;padding:6px 10px;font-size:0.75em;}
+.dropdown-menu input[type="number"]{width:55px;padding:2px 4px;border-radius:4px;border:1px solid #555;background:#1e1e30;color:#ddd;font-family:inherit;font-size:0.75em;}
+.custom-speed-row{display:flex;gap:4px;align-items:center;padding:2px;}
+
+.save-item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:6px;border:1px solid #333;background:#1a1a28;font-size:0.7em;gap:6px;}
+.save-item .save-info{flex:1;overflow:hidden;}
+.save-item .save-user{font-weight:600;color:var(--gold);}
+.save-item .save-time{font-size:0.7em;color:#888;display:block;}
+.save-item button{padding:3px 8px;font-size:0.65em;border-radius:10px;cursor:pointer;background:#2a3a50;color:#ddd;border:1px solid #445;font-family:inherit;}
+
+#map-container{flex:1 1 auto;display:flex;overflow:auto;padding:4px;position:relative;min-height:0;min-width:0;}
+.canvas-wrapper{position:relative;display:block;margin:auto;flex-shrink:0;line-height:0;width:720px;height:480px;}
+canvas#gameCanvas{display:block;width:720px;height:480px;border-radius:6px;cursor:crosshair;image-rendering:pixelated;touch-action:none;}
+
+.mode-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:6px;display:none;align-items:center;justify-content:center;z-index:5;}
+.mode-overlay.active{display:flex;}
+.mode-overlay .warn-text{color:#fff;font-size:1rem;font-weight:bold;text-shadow:0 0 20px rgba(0,0,0,0.9);padding:8px 20px;background:rgba(0,0,0,0.7);border-radius:12px;border:2px solid #ff4444;white-s[...]
+  position:fixed; right:10px; top:50%; z-index:400;
+  background:#1e1e30; border:2px solid #555; border-radius:10px; padding:6px;
+  min-width:210px; width:min(260px,80vw);
+  box-shadow:0 8px 20px rgba(0,0,0,0.8);
+  max-height:calc(100vh - 140px);
+  overflow-y:auto; overscroll-behavior:contain;
+  transform:translate(120%,-50%);
+  opacity:0; pointer-events:none;
+  transition:transform .28s cubic-bezier(.22,.9,.3,1), opacity .2s ease;
+}
+#context-menu.show{transform:translate(0,-50%);opacity:1;pointer-events:auto;}
+#context-menu .menu-item{padding:6px 10px;cursor:pointer;font-size:0.8em;color:#ddd;border-radius:4px;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+#context-menu .menu-item:hover{background:#2a2a44;color:#fff;}
+.menu-item .cost{color:var(--gold);}
+.menu-item .crystal-cost{color:#aa88ff;}
+
+.menu-tabs{display:flex;gap:4px;padding:4px 2px;border-bottom:1px solid #444;margin-bottom:4px;flex-wrap:wrap;}
+.menu-tabs .tab-btn{background:transparent;border:none;color:#888;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:0.75em;font-family:inherit;transition:0.2s;}
+.menu-tabs .tab-btn:hover{color:#ccc;}
+.menu-tabs .tab-btn.active{background:#2a3a50;color:var(--gold);}
+.categoryContent{display:flex;flex-direction:column;gap:2px;}
+
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:600;display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--bg);border:2px solid #444;border-radius:12px;padding:16px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;color:#ddd;}
+.modal h3{color:var(--gold);text-align:center;margin-bottom:10px;}
+.modal h4{color:#88ccff;margin:8px 0 4px;}
+.modal input{width:100%;padding:8px;margin:4px 0;border-radius:6px;border:1px solid #555;background:#1e1e30;color:#ddd;font-family:inherit;}
+.modal button{margin:4px;padding:6px 14px;border-radius:8px;border:1px solid #555;background:#2a3a50;color:#ddd;cursor:pointer;font-family:inherit;}
+.modal button:hover{background:#354860;}
+.buff-card{display:inline-block;padding:8px 12px;margin:4px;border-radius:8px;border:2px solid var(--gold);background:#2a2a38;color:var(--gold);cursor:pointer;text-align:center;font-weight:bold;}
+.buff-card:hover{background:#3a3a48;border-color:#ffcc00;}
+.ency-entry{font-size:0.78em;margin-bottom:6px;padding:6px;border-radius:6px;background:#1e1e30;border-left:3px solid #555;}
+.ency-entry b{color:var(--gold);}
+.dev-log-entry{font-size:0.72em;padding:4px 6px;border-bottom:1px solid #333;color:#ddd;}
+
+.version-tag{position:fixed;bottom:5px;right:12px;color:#888;font-size:0.7em;z-index:10;}
+.dev-badge{position:fixed;bottom:5px;left:12px;color:#ff66ff;font-size:0.7em;z-index:10;font-weight:bold;}
+
+.version-select{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;overflo[...]
+.version-title{font-size:2.5em;font-weight:800;color:var(--gold);text-shadow:0 0 20px rgba(240,192,64,0.5);letter-spacing:6px;text-align:center;}
+.version-subtitle{font-size:0.9em;color:#888;text-align:center;margin-top:-12px;}
+.version-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:700px;}
+.version-card{background:var(--bg);border:3px solid #3a4a60;border-radius:16px;padding:24px 32px;cursor:pointer;text-align:center;transition:0.3s;width:280px;}
+.version-card:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 8px 30px rgba(240,192,64,0.2);}
+.version-card.season{border-color:#6a3ace;}
+.version-card.season:hover{border-color:#9a5aff;box-shadow:0 8px 30px rgba(106,58,206,0.3);}
+.version-card .vc-icon{font-size:3em;margin-bottom:8px;}
+.version-card .vc-name{font-size:1.3em;font-weight:700;margin-bottom:6px;}
+.version-card .vc-desc{font-size:0.8em;color:#999;line-height:1.5;}
+.version-card.season .vc-name{color:#aa88ff;}
+.version-card.normal .vc-name{color:#f0c040;}
+
+.leaderboard-entry{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;background:#1e1e30;border:1px solid #333;margin-bottom:6px;font-size:0.85em;}
+.leaderboard-entry .lb-rank{font-weight:bold;font-size:1.1em;width:30px;text-align:center;}
+.leaderboard-entry .lb-name{flex:1;color:#ddd;font-weight:600;}
+.leaderboard-entry .lb-score{color:#f0c040;font-weight:bold;}
+.leaderboard-entry.rank-1{border-color:#ffd700;background:linear-gradient(90deg,#2a2410,#1e1e30);}
+.leaderboard-entry.rank-1 .lb-rank{color:#ffd700;}
+.leaderboard-entry.rank-2{border-color:#c0c0c0;background:#1e2a2a;}
+.leaderboard-entry.rank-3{border-color:#cd7f32;background:#2a2010;}
+.leaderboard-entry.rank-4{border-color:#6688cc;background:#1a1e2e;}
+.leaderboard-entry.rank-5{border-color:#8866aa;background:#1e1a2e;}
+.leaderboard-entry.rank-other{border-color:#3a3a4a;background:#1a1a28;}
+
+.season-hud{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:16px;align-items:center;background:#1a1a2eee;backdrop-filter:blur(8px);padding:4px 16px;border-radiu[...]
+.season-hud .sh-item{font-size:0.85em;color:#ddd;}
+.season-hud .sh-timer{font-size:1.1em;font-weight:bold;color:#ff6644;}
+.season-hud .sh-score{font-size:1.1em;font-weight:bold;color:#f0c040;}
+
+@media (max-width:900px){
+  .navbar-title{font-size:0.95em;}
+  .navbar-info{font-size:0.68em;gap:5px;}
+  .dropdown-btn,.nav-btn{font-size:0.65em;padding:3px 7px;}
+}</style>
+</head>
+<body class="theme-default"><div class="version-tag">v10.4 新Boss·初始出怪重做·天气控制者</div>
+<div class="dev-badge" id="devBadge" style="display:none;">🔐 开发者模式</div>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <span class="navbar-title">🛡️ 通道塔防</span>
+  </div>
+  <div class="navbar-info" id="statusBar">
+    <span>❤️ <span class="val-danger" id="info-hp">100</span></span>
+    <span>💰 <span class="val-gold" id="info-points">20</span></span>
+    <span>💎 <span class="val-crystal" id="info-crystals">0</span></span>
+    <span>🌊 <span id="info-wave">准备中</span></span>
+    <span>⏱ <span id="info-timer">-</span></span>
+    <span>📡 <span id="info-phase">挖掘</span></span>
+    <span>🏆 <span id="info-boss-buffs" style="color:#f0c040;"></span></span>
+  </div>
+  <div class="navbar-right">
+    <button class="nav-btn" id="btn-undo" onclick="undoDig()" style="display:none;">↩️ 撤回</button>
+    <button class="nav-btn" id="btn-operation" onclick="cycleOperationMode()">🖱️普通</button>
+    <button class="nav-btn" onclick="skipWaveBreak()" id="skip-wave-btn" style="display:none;">⏩下一波</button>
+    <div class="dropdown" id="speedDropdown">
+      <button class="dropdown-btn" id="speedToggle">⏩ 0.5x ▼</button>
+      <div class="dropdown-menu align-right" id="speedMenu">
+        <button class="nav-btn" data-speed="0.5" onclick="setSpeed(0.5)">0.5x</button>
+        <button class="nav-btn" data-speed="1" onclick="setSpeed(1)">1x</button>
+        <button class="nav-btn" data-speed="2" onclick="setSpeed(2)">2x</button>
+        <button class="nav-btn" data-speed="5" onclick="setSpeed(5)">5x</button>
+        <div class="custom-speed-row">
+          <input type="number" id="custom-speed-input" value="1" min="0.1" max="20" step="0.1">
+          <button class="nav-btn" onclick="setCustomSpeed()">⚡自定义</button>
+        </div>
+        <button class="nav-btn" id="btn-pause" onclick="togglePause()" style="display:none;">⏸ 暂停</button>
+      </div>
+    </div>
+    <div class="dropdown" id="systemMenu">
+      <button class="dropdown-btn" id="systemToggle">📁 系统 ▼</button>
+      <div class="dropdown-menu align-right" id="systemDropdown">
+        <button class="nav-btn" onclick="openSaveManager()">💾 存档管理</button>
+        <button class="nav-btn" id="btn-manual" onclick="openInstructions()">📋 说明书</button>
+        <button class="nav-btn" id="btn-ency" onclick="openEncyclopediaPaused()" style="display:none;">📖 图鉴</button>
+        <button class="nav-btn" id="btn-dev" onclick="toggleDevMode()">🔐 开发者</button>
+        <button class="nav-btn" id="btn-back-menu" onclick="backToMenu()" style="display:none;">🏠 返回菜单</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="map-container">
+  <div class="canvas-wrapper" id="canvasWrapper">
+    <canvas id="gameCanvas" width="720" height="480"></canvas>
+    <div class="mode-overlay" id="modeOverlay">
+      <div class="warn-text" id="modeWarnText">⚡ 献祭模式</div>
+    </div>
+  </div>
+</div>
+
+<div id="context-menu"></div>
+<div id="modalContainer"></div>
+
+<div id="versionSelect" class="version-select">
+  <div class="version-title">🛡️ 通道塔防</div>
+  <div class="version-subtitle">选择游戏版本 · v10.4</div>
+  <div style="display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap;">
+    <button class="nav-btn" onclick="showAnnouncements()">📢 公告</button>
+    <button class="nav-btn" onclick="openInstructions()">📖 说明书</button>
+    <button class="nav-btn" onclick="openEncyclopedia()">📖图鉴</button>
+    <button class="nav-btn" onclick="showThemeSelector()">🎨 主题</button>
+    <button class="nav-btn" onclick="showLeaderboard()">📊 排行榜</button>
+  </div>
+  <div class="version-cards" id="versionCards">
+    <div class="version-card normal" onclick="startNormalMode()">
+      <div class="vc-icon">🎮</div>
+      <div class="vc-name">普通版</div>
+      <div class="vc-desc">经典模式<br>挖掘通道·自由建造·无尽波次<br>存档管理·开发者模式</div>
+    </div>
+    <div class="version-card season" onclick="showSeasonModes()">
+      <div class="vc-icon">🏆</div>
+      <div class="vc-name">赛季版</div>
+      <div class="vc-desc">赛季模式<br>经验·超级随机<br>（更多模式敬请期待）</div>
+    </div>
+  </div>
+  <div id="seasonModeCards" class="version-cards" style="display:none;flex-direction:column;gap:12px;max-width:600px;">
+    <div style="color:#aa88ff;font-size:1.1em;font-weight:bold;">选择赛季模式</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <div class="version-card season" onclick="startSeasonMode('experience')" style="width:260px;">
+        <div class="vc-icon">⏱️</div><div class="vc-name">经验模式</div>
+        <div class="vc-desc">10分钟疯狂极限出怪<br>环形赛道·基地不死·冲分排行<br>结束后录入排行榜</div>
+      </div>
+      <div class="version-card season" onclick="startSeasonMode('random')" style="width:260px;">
+        <div class="vc-icon">🎲</div><div class="vc-name">超级随机</div>
+        <div class="vc-desc">只能种随机礼盒开炮塔<br>青铜·白银·黄金·钻石宝盒<br>盲盒怪物·波次制·可死亡</div>
+      </div>
+    </div>
+    <button class="nav-btn" onclick="document.getElementById('seasonModeCards').style.display='none';document.getElementById('versionCards').style.display='flex';">← 返回</button>
+  </div>
+</div>
+
+<div id="seasonHUD" class="season-hud" style="display:none;">
+  <span class="sh-item">⏱ 倒计时</span><span class="sh-timer" id="season-timer">10:00</span>
+  <span class="sh-item">💰 分数</span><span class="sh-score" id="season-score">0</span>
+  <span class="sh-item">💀 击杀</span><span id="season-kills">0</span>
+  <span class="sh-item">🌊 难度</span><span id="season-difficulty">1</span>
+</div>
+
+
+<script>"use strict";
+/* ============================================================
+   通道塔防 v10.3 — 主逻辑（第 1/2 段）
+   ============================================================ */
+
+/* ========== 基础常量 ========== */
+const ROWS=20, COLS=30, CELL_SIZE=24;
+const canvas=document.getElementById('gameCanvas');
+canvas.width=COLS*CELL_SIZE; canvas.height=ROWS*CELL_SIZE;
+const ctx=canvas.getContext('2d');
+
+/* DOM 缓存 */
+
+
+/* ========== Toast 提示系统（v10.4 P0 修复） ========== */
+function showToast(msg, type='info', duration=2200){
+  let container = document.getElementById('toastContainer');
+  if(!container){
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);'
+      + 'z-index:650;display:flex;flex-direction:column;gap:6px;pointer-events:none;'
+      + 'align-items:center;max-width:90vw;';
+    document.body.appendChild(container);
+  }
+  const colors = {
+    info:    {bg:'#1e2e3e', border:'#44aaff', color:'#cceaff'},
+    success: {bg:'#1e2e1e', border:'#44ff44', color:'#ccffcc'},
+    warn:    {bg:'#2e2e1e', border:'#ffaa00', color:'#ffeeaa'},
+    error:   {bg:'#2e1e1e', border:'#ff4444', color:'#ffcccc'},
+    gold:    {bg:'#2e2a1e', border:'#f0c040', color:'#ffdd88'}
+  };
+  const c = colors[type] || colors.info;
+  const toast = document.createElement('div');
+  toast.style.cssText = `background:${c.bg};color:${c.color};border:2px solid ${c.border};`
+    + `padding:8px 16px;border-radius:10px;font-size:0.85em;`
+    + `box-shadow:0 6px 20px rgba(0,0,0,0.6);`
+    + `opacity:0;transform:translateY(-10px);`
+    + `transition:opacity .22s ease,transform .22s ease;`
+    + `white-space:pre-line;text-align:center;font-family:inherit;`;
+  toast.textContent = String(msg);
+  container.appendChild(toast);
+  requestAnimationFrame(()=>{
+    toast.style.opacity='1';
+    toast.style.transform='translateY(0)';
+  });
+  setTimeout(()=>{
+    toast.style.opacity='0';
+    toast.style.transform='translateY(-10px)';
+    setTimeout(()=>toast.remove(), 260);
+  }, duration);
+}
+window.showToast = showToast;
+
+/* 覆盖原生 alert —— 全站所有 alert() 自动变成非阻塞 toast */
+(function(){
+  window.alert = function(msg){
+    // 简单分类：含"不足"/"失败"/"损坏"/"摧毁"→ error，含"成功"/"已"→ success，其余 warn
+    const s = String(msg);
+    let t = 'warn';
+    if(/不足|失败|损坏|错误|摧毁|没/.test(s)) t = 'error';
+    else if(/成功|已保存|已读取|已开启|已退出|已升级|获得|解锁|生效/.test(s)) t = 'success';
+    else if(/💰|pt|💎|奖励|返还|偷走/.test(s)) t = 'gold';
+    showToast(s, t, 2400);
+  };
+})();
+
+/* ========== 新手引导（v10.4 P0 修复） ========== */
+let tutorialShown = {};
+function tryShowTutorial(key, msg, type='info', duration=3500){
+  if(gameMode!=='normal') return;              // 只在普通模式引导
+  if(waveNumber>3) return;                     // 第 3 波后不再打扰
+  if(tutorialShown[key]) return;
+  tutorialShown[key] = true;
+  setTimeout(()=>showToast(msg, type, duration), 350);
+}
+window.tryShowTutorial = tryShowTutorial;
+const _domCache={};
+function _$(id){ if(!_domCache[id]) _domCache[id]=document.getElementById(id); return _domCache[id]; }
+
+/* 主题配色 */
+const THEME_COLORS={
+  default:{bg:'#1c1c24',panel:'#16213e',gold:'#f0c040',path:'#5c4033',undig:'#1e1e28',base:'#f44336',entrance:'#4caf50',tower:'#2a2a38',obstacle:'#3a3028'},
+  ocean:{bg:'#87CEFA',panel:'#2c3e50',gold:'#FFD700',path:'#E1FFFF',undig1:'#00BFFF',undig2:'#00FFFF',base:'#ff6b35',entrance:'#ff6b35',tower:'#e8d4a0',obstacle:'#c9b896',titleColor:'#FFD700'},
+  field:{bg:'#bca169',panel:'#c39a1e',gold:'#4a3500',path:'#97dd25',undig:'#ffff47',base:'#fffe9e',entrance:'#fffe9e',tower:'#97dd25',obstacle:'#97dd25',titleColor:'#4a3500'},
+  mono:{bg:'#333333',panel:'#3a3a3a',gold:'#cccccc',path:'#cccccc',undig:'#444444',base:'#eeeeee',entrance:'#eeeeee',tower:'#666666',obstacle:'#777777',titleColor:'#cccccc'},
+  caramelDark:{bg:'#744952',panel:'#4E4161',gold:'#FFD700',path:'#EEBEBC',undig:'#3E110E',base:'#F47379',entrance:'#F47379',tower:'#605077',obstacle:'#3E110E',titleColor:'#FFD700'},
+  caramelLight:{bg:'#E4B5A3',panel:'#AD7467',gold:'#FFFFFF',path:'#E4C2B6',undig:'#8A5D58',base:'#E0A49C',entrance:'#E0A49C',tower:'#FDF4EF',obstacle:'#8A5D58',titleColor:'#FFFFFF'},
+  pvzDay:{bg:'#b7aa00',panel:'#996c33',gold:'#4a2800',path:'#996c33',undig1:'#078814',undig2:'#0ac01d',base:'#e60012',entrance:'#89c997',tower:'#078814',obstacle:'#996c33',titleColor:'#4a2800'},
+  pvzNight:{bg:'#003c24',panel:'#996c33',gold:'#FFD700',path:'#81511c',undig1:'#0b574d',undig2:'#0d4e30',base:'#e60012',entrance:'#89c997',tower:'#0b574d',obstacle:'#81511c',titleColor:'#FFD700'}
+};
+let currentTheme='default'; let TC=THEME_COLORS[currentTheme];
+
+/* 地图起点终点 */
+const START_ROW=10, START_COL=0, END_ROW=10, END_COL=COLS-1;
+const MAX_LEVEL=200, MAX_POINTS=100000, MAX_CRYSTALS=3000;const NEW_BOSS_KEYS=['devouring_serpent','emperor_goose','crystal_queen','lin_yiqin','mirror_administrator'];
+
+/* 全局状态 */
+let gamePhase='digging', gameSpeed=1;
+let baseHP=100, maxBaseHP=100, points=20, crystals=0, waveNumber=0;
+let screenShake=0;
+let waveActive=false, waveBreakTimer=0, waveBreakDuration=20;
+let seasonWaveTimer=0;
+let enemies=[], particles=[], projectiles=[], allies=[];
+let grid=[], pathOrder=[], pathCorners=[];
+let selectedCell=null, quickUpgradeMode=false;
+let achievementData={}, unlockedEnemyTypes=new Set();
+let pendingEnemyIntro=null, introPause=false, bossSelectionPause=false;
+let gamePaused=false;
+let waveSpawnQueue=[], waveSpawnTimer=0;
+let mouseDown=false, mouseRow=-1, mouseCol=-1, mouseCanvasX=-1, mouseCanvasY=-1;
+let viewportX=-1, viewportY=-1;
+let selectionStartRow=-1, selectionStartCol=-1, selectionEndRow=-1, selectionEndCol=-1;
+let bossEnemy=null, bossBuffLevels={speed:0,health:0,armor:0};
+let globalPenalties={damageReduction:0,pointReduction:0,extraBossChance:0,typeResist:0,corruption:0};
+let baseUpgrades={toughness:0};
+let baseTotems=0, baseIncomeTimer=0, baseInvincible=0;
+let nextWaveDouble=false;
+let gameMode='normal';
+let seasonTimer=0, seasonMaxTime=600, seasonWaveMaxTime=120, seasonWaveTime=0;
+let seasonScore=0, seasonKills=0, seasonDifficulty=1;
+let seasonSpawnTimer=0, seasonBossTimer=0;
+let seasonActive=false, seasonSubMode='experience';
+let seasonEntryPoints=[];
+let randomBoxMode=false, randomBossLastWave=0;
+let fortressPhase='digging', fortressWaveCounter=0;
+let devMode=false, devDamageLog=[];let oneShotUpgrades = { dynamite: 0, iceBomb: 0 };   // ★ 一次性道具升级等级(0~10)
+let blackholeUsedThisGame = false;                   // ★ 黑洞本局是否已用
+         
+let digHistory=[];tutorialShown = {};
+let currentEncyclopediaTab='normal_enemy';
+
+/* ★ 唯一词条按模式分开统计 */
+let affixUsedByMode = {
+  normal:{},
+  experience:{},
+  random:{},
+};
+function getCurrentAffixModeKey(){
+  if(gameMode==='season') return seasonSubMode;
+  return 'normal';
+}
+function getAffixUsedMap(){ return affixUsedByMode[getCurrentAffixModeKey()] || {}; }
+function markAffixUsed(id){
+  const m = getAffixUsedMap(); m[id] = true;
+  affixUsedByMode[getCurrentAffixModeKey()] = m;
+}
+function isAffixUsedInCurrentMode(id){
+  return !!getAffixUsedMap()[id];
+}
+
+/* 塔解锁波次 */const TOWER_UNLOCK_WAVE={
+  arrow:0,
+  dynamite:0,
+  ice:2,
+  fire:3,
+  fan:4,
+  toxic:5,
+  lamp:6,
+  tesla:6,
+  windWall:7,
+  iceBomb:7,
+  repair:8,
+  cannon:8,
+  nuke:9,
+  defense:10,
+  command:15,
+  mine:20,
+  blackhole:21,
+  wireNet:22,
+  potion:22,
+  storm:22
+};
+const MAX_TOWER_LVL=20; const ULTIMATE_THRESHOLD=15;
+
+/* ========== 词条池（唯一词条） ========== */
+const AFFIX_POOL=[
+  {id:'speed',name:'💨风驰电掣',desc:'所有敌人速度永久+10%',effect:()=>{bossBuffLevels.speed++;}},
+  {id:'health',name:'❤️生机勃勃',desc:'所有敌人生命值永久+25%',effect:()=>{bossBuffLevels.health++;}},
+  {id:'armor',name:'🛡️铜墙铁壁',desc:'所有敌人护甲永久+3',effect:()=>{bossBuffLevels.armor++;}},
+  {id:'destroy',name:'💥断壁残垣',desc:'随机摧毁1/2炮塔',effect:()=>{destroyRandomTowers(0.5);}},
+  {id:'poor',name:'💰囊中羞涩',desc:'损失当前点数的50%',effect:()=>{if(!devMode){points=Math.floor(points*0.5);updateUI();}}},
+  {id:'stun',name:'⚡天旋地转',desc:'所有炮塔眩晕10秒',effect:()=>{stunAllTowers(10);}},
+  {id:'teleport',name:'🌀兵临城下',desc:'传送5个敌人到基地旁',effect:()=>{teleportEnemiesNearBase(5);}},
+  {id:'baseDmg',name:'🩸生灵涂炭',desc:'基地损失30点生命',effect:()=>{damageBase(30,'词条惩罚');}},
+  {id:'crystal',name:'💎宝石流失',desc:'失去所有水晶',effect:()=>{if(!devMode)crystals=0;}},
+  {id:'downgrade',name:'📉降级打击',desc:'随机10座炮塔降1级',effect:()=>{downgradeRandomTowers(10);}},
+  {id:'burn',name:'🔥基地灼烧',desc:'基地每秒损失5点生命持续256秒',effect:()=>{startBaseBurn(256);}},
+  {id:'double',name:'👾敌潮汹涌',desc:'下一波敌人数量翻倍',effect:()=>{nextWaveDouble=true;}},
+  {id:'mine',name:'⚰️矿场崩塌',desc:'所有水晶矿场被摧毁',effect:()=>{destroyAllMines();}},
+  {id:'goldReduce',name:'💰财政紧缩',desc:'击杀金币收益永久-15%',effect:()=>{globalPenalties.pointReduction++;}},
+  {id:'bossChance',name:'👹Boss连连',desc:'每波额外生成Boss概率+20%(最多100%)',effect:()=>{globalPenalties.extraBossChance=Math.min(1,globalPenalties.extraBossChance+0.2);}},
+  {id:'dmgReduce',name:'🛡️皮糙肉厚',desc:'所有敌人伤害减免+7%(最多70%)',effect:()=>{globalPenalties.damageReduction=Math.min(0.7,globalPenalties.damageReduction+0.07);}},
+  {id:'atkDown',name:'🌀手无缚鸡之力',desc:'所有炮塔攻击降低30%持续15秒',effect:()=>{for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type==='tower')grid[r][c].atkDebuffTimer=15;grid[r][c].atkDebuffAmount=0.3;}}
+  {id:'treaty',name:'📜苛刻契约',desc:'每轮结束后都要选择惩罚',effect:()=>{nanjingTreaty=true;}},
+  {id:'fine',name:'🎫罚单',desc:'本轮扣500金币',effect:()=>{if(!devMode){points=Math.max(0,points-500);updateUI();}}},
+  {id:'landlord',name:'👵包租婆',desc:'每轮扣50金币否则扣血【唯一】',effect:()=>{landlordActive=true;},once:true},
+  {id:'wound',name:'🩹伤口感染',desc:'究极治疗者在场时炮塔不能回血【唯一】',effect:()=>{woundInfection=true;},once:true},
+  {id:'slack',name:'🐌磨洋工',desc:'修复站优先修复炮塔而非基地【唯一】',effect:()=>{repairPriorityTower=true;},once:true},
+  {id:'undead',name:'💀不死族',desc:'所有boss概率复活【唯一】',effect:()=>{undeadBoss=true;},once:true},
+  {id:'gunpowder',name:'🧨最后的火药',desc:'爆炸单位死亡后必定自爆【唯一】',effect:()=>{gunpowderActive=true;},once:true},
+  {id:'support',name:'📡呼叫支援',desc:'小boss死亡后召唤大boss【唯一】',effect:()=>{callSupport=true;},once:true},
+  {id:'eastwind',name:'🌪️东风不利',desc:'风障只停滞飞行单位而非秒杀【唯一】',effect:()=>{eastWindActive=true;},once:true},
+  {id:'heatwave',name:'☀️三伏天',desc:'随机5个炮塔被献祭',effect:()=>{sacrificeRandomTowers(5);}},
+  {id:'doubleboss',name:'😈祸不单行',desc:'大boss不会只出现一个【唯一】',effect:()=>{doubleBoss=true;},once:true},
+  {id:'lockdown',name:'🔒科技封锁',desc:'暂时禁用7种炮塔',effect:()=>{techLockdown();}}
+];
+
+let selectedAffixes=[];
+let seasonWaveGoldBonus=0;
+let nanjingTreaty=false, landlordActive=false, woundInfection=false, repairPriorityTower=false;
+let undeadBoss=false, gunpowderActive=false, callSupport=false, eastWindActive=false, doubleBoss=false;
+let techLockedTypes=null;
+let weatherType=null, weatherWavesLeft=0;
+
+function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function isAffixOnce(a){return a&&a.once===true;}
+function isAffixConsumed(a){if(!a)return true;if(isAffixOnce(a))return isAffixUsedInCurrentMode(a.id);return false;}
+
+let fortressRefreshCount=0;
+function showAffixSelection(){
+  fortressRefreshCount=2;
+  const available=AFFIX_POOL.filter(a=>!isAffixConsumed(a));
+  const pool=shuffleArray([...available]).slice(0,5);
+  renderAffixSelection(pool,[]);
+}
+function renderAffixSelection(pool,chosen){
+  const cnt=chosen.length;
+  let html=`<div class="modal-overlay"><div class="modal" style="max-width:500px;"><h3>🎯 选择词条 (${cnt}/2)</h3><p style="color:#888;font-size:0.8em;">选择2个词条，可刷新${fortressRefreshCount}次</p>`;
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">`;
+  pool.forEach((a,i)=>{
+    const sel=chosen.includes(i);
+    html+=`<div onclick="toggleAffix(${i})" style="padding:12px 16px;border-radius:8px;background:${sel?'#3a5a3a':'#2a2a3a'};border:2px solid ${sel?'#4a4':'#444'};cursor:pointer;width:140px;text-align:center;color:#ddd;">${a.name}<br><span style="font-size:0.7em;color:#aaa;">${a.desc}</span></div>`;
+  });
+  html+=`</div><div style="text-align:center;margin-top:12px;">`;
+  if(cnt===2) html+=`<button onclick="confirmAffixes()">✅ 确认选择</button> `;
+  if(fortressRefreshCount>0) html+=`<button onclick="refreshAffixes()">🔄 刷新 (${fortressRefreshCount}次)</button> `;
+  html+=`<button onclick="document.getElementById('modalContainer').innerHTML=''">❌ 关闭</button>`;
+  html+=`</div></div></div>`;
+  document.getElementById('modalContainer').innerHTML=html;
+  window._affixPool=pool; window._affixChosen=chosen;
+}
+window.toggleAffix=function(i){let c=[...window._affixChosen];if(c.includes(i))c=c.filter(x=>x!==i);else if(c.length<2)c.push(i);renderAffixSelection(window._affixPool,c);};
+window.refreshAffixes=function(){if(fortressRefreshCount<=0)return;fortressRefreshCount--;const av=AFFIX_POOL.filter(a=>!isAffixConsumed(a));renderAffixSelection(shuffleArray([...av]).slice(0,5),[]);};
+window.confirmAffixes=function(){
+  window._affixChosen.map(i=>window._affixPool[i]).forEach(a=>{
+    if(isAffixOnce(a)) markAffixUsed(a.id);
+    a.effect();
+  });
+  document.getElementById('modalContainer').innerHTML='';
+};
+
+function clampPoints(amount,force){
+  if(devMode){points=MAX_POINTS;return;}
+  if(!force && gameMode==='season'&&seasonSubMode==='fortress'&&amount>0)return;
+  points=Math.min(MAX_POINTS,Math.max(0,points+amount));
+  if(gameMode==='season'&&amount>0){if(seasonSubMode==='experience'||seasonSubMode==='random')seasonScore+=amount;}
+}
+function clampCrystals(amount){if(devMode){crystals=MAX_CRYSTALS;return;}crystals=Math.min(MAX_CRYSTALS,Math.max(0,crystals+amount));}
+
+/* ========== 敌人数据 ========== */
+const ENEMY_TYPES={
+  zombie:{name:'僵尸',emoji:'🧟',hp:120,speed:1.3,armor:3,damage:0.8,bounty:5,desc:'赚工分的小伙子',tier:1,special:null,color:'#8b9a6b'},
+  slime:{name:'史莱姆',emoji:'🟢',hp:70,speed:1.0,armor:5,damage:1.2,bounty:8,desc:'死亡分裂',tier:1,special:'split',color:'#5cb85c'},
+  runner:{name:'竞走者',emoji:'🏃',hp:50,speed:4.2,armor:2,damage:0.6,bounty:6,desc:'高速移动',tier:2,special:'immuneslow',color:'#f0ad4e'},
+  flesh_mountain:{name:'肉山',emoji:'🗻',hp:800,speed:0.55,armor:1.5,damage:40,bounty:25,desc:'血条厚',tier:3,special:null,color:'#c0392b'},
+  ghost:{name:'幽魂',emoji:'👻',hp:80,speed:1.8,armor:99,damage:1.8,bounty:15,desc:'穿墙、遇光显现',tier:2,special:'phase',color:'#9b59b6'},
+  drone:{name:'无人机',emoji:'🛸',hp:100,speed:3.5,armor:4,damage:1.4,bounty:12,desc:'飞行单位，免疫物理攻击',tier:2,special:'phase',color:'#66ccff',flying:true},
+  airship:{name:'飞艇',emoji:'🛰️',hp:180,speed:2.0,armor:3,damage:2.0,bounty:16,desc:'直线冲击基地',tier:2,special:'straight',color:'#77aaff',flying:true},
+  healer:{name:'治疗者',emoji:'💚',hp:150,speed:1.1,armor:2,damage:0.5,bounty:10,desc:'治疗周围敌人',tier:2,special:'healer',color:'#90ee90'},
+  shocker:{name:'震撼者',emoji:'⚡',hp:200,speed:2.0,armor:6,damage:2.0,bounty:15,desc:'眩晕炮塔',tier:2,special:'shocker',color:'#ffaa00'},
+  tankmaster:{name:'坦克师',emoji:'🚛',hp:1200,speed:1.5,armor:25,damage:5.5,bounty:35,desc:'血厚可开火的坦克',tier:3,special:null,color:'#6b4f4f'},
+  exploder:{name:'自爆虫',emoji:'💣',hp:80,speed:2.4,armor:2,damage:2.5,bounty:10,desc:'死亡自爆',tier:2,special:'explode',color:'#ff4444'},
+  boss:{name:'毁灭者',emoji:'👾',hp:12000,speed:0.7,armor:30,damage:20.0,bounty:400,desc:'赚工分的小boss',tier:5,special:'boss',color:'#ff0000'},
+  boss_jiawei:{name:'贾维',emoji:'👑',hp:40000,speed:0.5,armor:60,damage:40.0,bounty:1000,desc:'强劲敌人',tier:6,special:'jiawei',color:'#ff00ff'},
+  boss_bomber:{name:'轰炸机',emoji:'🛩️',hp:20000,speed:0.01,armor:20,damage:15.0,bounty:800,desc:'飞行并持续轰炸周边炮塔',tier:6,special:'bomber',color:'#cc8800',flying:true},
+  thief:{name:'盗贼',emoji:'🦝',hp:80,speed:2.8,armor:3,damage:10,bounty:2.0,desc:'偷钱',tier:2,special:'thief',color:'#a0522d'},
+  summoner:{name:'召唤师',emoji:'🧙',hp:180,speed:0.9,armor:5,damage:0.8,bounty:18,desc:'召唤小僵尸',tier:3,special:'summoner',color:'#9370db'},
+  splitter:{name:'分裂者',emoji:'🔵',hp:140,speed:1.5,armor:6,damage:1.6,bounty:14,desc:'持续分裂',tier:2,special:'splitter',color:'#4169e1'},
+  shielder:{name:'护盾兵',emoji:'🛡️',hp:120,speed:1.1,armor:8,damage:1.2,bounty:12,desc:'拥有护盾',tier:2,special:'shield',color:'#b8860b'},
+  teleporter:{name:'传送者',emoji:'🌀',hp:90,speed:1.8,armor:2,damage:1.8,bounty:14,desc:'受击瞬移',tier:2,special:'teleporter',color:'#20b2aa'},
+  reflector:{name:'反弹者',emoji:'🪞',hp:160,speed:1.3,armor:7,damage:1.5,bounty:18,desc:'25%反弹伤害并眩晕炮塔',tier:2,special:'reflect',color:'#cc88cc'},
+  ultimate_zombie:{name:'究极僵尸',emoji:'🧟‍♂️',hp:600,speed:1.0,armor:15,damage:4,bounty:45,desc:'眩晕周围炮塔',tier:3,special:'shocker',color:'#cc2222'},
+  ultimate_slime:{name:'究极史莱姆',emoji:'🟣',hp:500,speed:0.8,armor:14,damage:4.5,bounty:60,desc:'死亡分裂为16个普通史莱姆',tier:3,special:'split_16',color:'#8822cc'},
+  ultimate_runner:{name:'究极竞走者',emoji:'💨',hp:300,speed:7.0,armor:5,damage:3,bounty:50,desc:'极速且免疫减速',tier:3,special:'immuneslow',color:'#ffcc00'},
+  ultimate_flesh:{name:'究极肉山',emoji:'⛰️',hp:5000,speed:0.4,armor:50,damage:14,bounty:125,desc:'极高血量的血牛',tier:4,special:null,color:'#aa2222'},
+  ultimate_ghost:{name:'究极幽魂',emoji:'💀',hp:350,speed:3.0,armor:99,damage:5,bounty:75,desc:'快速穿墙，遇到光显现',tier:3,special:'phase',color:'#cc44ff'},
+  ultimate_drone:{name:'究极无人机',emoji:'🚀',hp:500,speed:6.0,armor:10,damage:5,bounty:80,desc:'飞行并免疫物理攻击',tier:3,special:'phase',color:'#ff4488',flying:true},
+  ultimate_airship:{name:'究极飞艇',emoji:'🛩️',hp:800,speed:3.0,armor:12,damage:6,bounty:100,desc:'直线飞行且带动周围怪物',tier:3,special:'carrier',color:'#ccddff',flying:true},
+  ultimate_healer:{name:'究极治疗者',emoji:'❇️',hp:800,speed:0.9,armor:6,damage:1.8,bounty:65,desc:'高效治疗其他怪物',tier:3,special:'healer',color:'#22ff22'},
+  ultimate_shocker:{name:'究极震撼者',emoji:'🌩️',hp:1000,speed:1.5,armor:18,damage:6,bounty:100,desc:'眩晕周围炮塔',tier:4,special:'shocker',color:'#ff6600'},
+  ultimate_tank:{name:'究极坦克师',emoji:'🚂',hp:7000,speed:1.3,armor:60,damage:17,bounty:150,desc:'重工坦克',tier:4,special:null,color:'#664422'},
+  ultimate_thief:{name:'究极盗贼',emoji:'🏴‍☠️',hp:300,speed:3.5,armor:10,damage:15,bounty:50,desc:'行进途中跳到附近炮塔头顶，2秒后偷走3×3范围内3~9座炮塔+1000点数',tier:4,special:'ultimate_thief',color:'#8b4513'},
+  ultimate_summoner:{name:'究极召唤师',emoji:'🧟‍♂️',hp:1000,speed:0.7,armor:15,damage:2,bounty:120,desc:'随机生成墓碑',tier:4,special:'ultimate_summoner',color:'#660066'},
+  _blindbox:{name:'盲盒怪物',emoji:'📦',hp:200,speed:1.0,armor:5,damage:3,bounty:20,desc:'打死后变成随机怪物',tier:1,special:'blindbox',color:'#ff8800'},
+  tombstone:{name:'墓碑',emoji:'🪦',hp:200,speed:0,armor:10,damage:0,bounty:5,desc:'召唤僵尸',tier:1,special:'tombstone',color:'#666666'},
+  boss_dancer:{name:'舞者',emoji:'💃',hp:8000,speed:1.0,armor:20,damage:15,bounty:300,desc:'召唤超级墓碑',tier:5,special:'boss_dancer',color:'#ff69b4'},
+  super_tombstone:{name:'超级墓碑',emoji:'🗿',hp:500,speed:0,armor:10,damage:0,bounty:50,desc:'召唤究极怪物',tier:4,special:'super_tombstone',color:'#8b0000'},
+  boss_scholar:{name:'学者',emoji:'🎓',hp:3000,speed:0.8,armor:15,damage:8,bounty:200,desc:'免疫同类炮塔伤害',tier:4,special:'boss_scholar',color:'#4169e1'},
+  weather_controller:{name:'天气控制者',emoji:'🌤️',hp:500,speed:0.1,armor:5,damage:0,bounty:100,desc:'改变天气,2轮后效果消失',tier:3,special:'weather',color:'#88ccff'},
+  devouring_serpent:{name:'恶食之蛇',emoji:'🐍',hp:15000,speed:0.8,armor:25,damage:30,bounty:600,desc:'随机游走，吞噬炮塔越吃越强',tier:6,special:'devouring_serpent',color:'#2d501c',isNewBoss:true},
+  emperor_goose:{name:'南极帝王鹅',emoji:'🦢',hp:20000,speed:1.2,armor:35,damage:25,bounty:700,desc:'免疫冰冻，冲刺摧毁炮塔',tier:6,special:'emperor_goose',color:'#cceeff',isNewBoss:true},
+  crystal_queen:{name:'水晶女王',emoji:'💎',hp:1,speed:0.3,armor:999,damage:0,bounty:1200,desc:'本体无敌，摧毁全部水晶锥即可击杀',tier:6,special:'crystal_queen',color:'#aa88ff',isNewBoss:true},
+  lin_yiqin:{name:'林易秦',emoji:'🌲',hp:8000,speed:1.0,armor:20,damage:15,bounty:500,desc:'给炮塔上Debuff，受击10次瞬移',tier:5,special:'lin_yiqin',color:'#44aa44',isNewBoss:true},
+  mirror_administrator:{name:'镜像管理者',emoji:'🪞',hp:10000,speed:0.9,armor:25,damage:20,bounty:550,desc:'召唤镜像炮塔攻击你的塔',tier:5,special:'mirror_administrator',color:'#cc66ff',isNewBoss:true},
+  crystal_spike:{name:'水晶锥',emoji:'🔮',hp:1500,speed:0,armor:15,damage:0,bounty:60,desc:'女王护卫，摧毁全部即可杀死女王',tier:4,special:'crystal_spike',color:'#aa88ff',isNewBoss:true}
+};
+
+/* ========== 炮塔数据 ========== */
+const TOWER_TYPES={
+  arrow:{name:'箭塔',icon:'🏹',cost:10,desc:'十字范围攻击，攻打最近的一个敌人，你的最初防线',dmg:15,dmgPerLvl:3,cd:0.8,cdPerLvl:0.07,range:99,rangePerLvl:0,fields:false,element:'physical',isBasic:true},
+  ice:{name:'冰塔',icon:'🧊',cost:35,desc:'范围减速，有概率冻结（能不能拿点雪糕吃吃）',dmg:1,dmgPerLvl:1.5,cd:1.5,cdPerLvl:0.08,range:2.5,rangePerLvl:0.3,fields:true,element:'ice',isBasic:true},
+  fire:{name:'喷火枪',icon:'🔥',cost:40,desc:'前方直线喷射火焰，烤肉必备',dmg:20,dmgPerLvl:4,cd:0.6,cdPerLvl:0.03,range:5,rangePerLvl:0.4,fields:true,element:'fire',isBasic:true},
+  tesla:{name:'特斯拉线圈',icon:'⚡',cost:55,desc:'连锁闪电，松果痰抖闪电五连鞭',dmg:20,dmgPerLvl:5,cd:2.0,cdPerLvl:0.1,range:3,rangePerLvl:0.4,fields:true,element:'lightning',isBasic:true},
+  cannon:{name:'高射炮',icon:'💣',cost:200,desc:'发射高能光粒，威力大（版本牢大）',dmg:100,dmgPerLvl:20,cd:2.5,cdPerLvl:0.15,range:99,rangePerLvl:0,fields:true,element:'light',isBasic:false},
+  nuke:{name:'核弹井',icon:'☢️',cost:350,desc:'自动发射火属性核弹，威力巨大',dmg:900,dmgPerLvl:80,cd:60,cdPerLvl:3,range:99,rangePerLvl:0,fields:true,element:'fire',isBasic:false},
+  repair:{name:'修复站',icon:'🔧',cost:45,desc:'优先修复基地，基地满血时修炮塔',dmg:0,dmgPerLvl:0,cd:5,cdPerLvl:0.5,range:99,rangePerLvl:0,fields:false,element:'none',isBasic:true},
+  toxic:{name:'毒素喷雾器',icon:'☣️',cost:40,desc:'前方直线毒雾，邀请您参加读气室',dmg:20,dmgPerLvl:2,cd:1.2,cdPerLvl:0.05,range:3,rangePerLvl:0.3,fields:true,element:'poison',isBasic:true},
+  mine:{name:'水晶矿场',icon:'⛏️',cost:0,desc:'生产水晶（献祭有奇效）',dmg:0,dmgPerLvl:0,cd:20,cdPerLvl:0,range:0,rangePerLvl:0,fields:false,crystalCost:3,isSpecial:true,element:'physical'},
+  potion:{name:'药水塔',icon:'🧪',crystalCost:50,desc:'施加随机强力debuff(种植于15级毒素喷射器上)',dmg:10,dmgPerLvl:2,cd:4,cdPerLvl:0.3,range:4,rangePerLvl:0,fields:true,isSpecial:true,element:'poison'},
+  storm:{name:'风暴核心',icon:'🌪️',crystalCost:80,desc:'击退周围敌人(种植于15级风扇上)（牢完了）',dmg:5,dmgPerLvl:1,cd:1,cdPerLvl:0.1,range:2.5,rangePerLvl:0.3,fields:true,isSpecial:true,element:'wind'},
+  dynamite:{name:'炸药包',icon:'🧨',cost:25,desc:'放置后爆炸（手速与激情）',dmg:500,dmgPerLvl:0,cd:0,cdPerLvl:0,range:2,rangePerLvl:0,fields:false,isOneShot:true,element:'fire',isBasic:true},
+  windWall:{name:'风障',icon:'🌬️',cost:30,desc:'立刻摧毁所有飞行敌人（boss除外，飞艇克星）',dmg:0,dmgPerLvl:0,cd:0,cdPerLvl:0,range:0,rangePerLvl:0,fields:false,isOneShot:true,element:'wind',isBasic:true},
+  iceBomb:{name:'极寒之冰',icon:'❄️',cost:20,desc:'冻结全屏敌人并造成伤害',dmg:200,dmgPerLvl:0,cd:0,cdPerLvl:0,range:99,rangePerLvl:0,fields:false,isOneShot:true,element:'ice',isBasic:true},
+  wireNet:{name:'电线网',icon:'🕸️',crystalCost:30,desc:'放置两个端点形成帧伤电光束,但是造成伤害较低(种植于15级特斯拉线圈上)',dmg:3,dmgPerLvl:1,cd:0.1,cdPerLvl:0.01,range:3,rangePerLvl:0.3,fields:false,isSpecial:true,element:'lightning'},
+  blackhole:{name:'黑洞',icon:'🕳️',cost:10000,crystalCost:800,desc:'清除全场敌对生物，在 5×5 范围生成持续 2 波的坑洞，坑洞内不能放置任何东西',dmg:99999,dmgPerLvl:0,cd:0,cdPerLvl:0,range:0,rangePerLvl:0,fields:false,isSpecial:true,element:'void'},
+  fan:{name:'风扇',icon:'🌀',cost:80,desc:'直线攻击击退怪物;前方有水吹水蒸气,有冰箱吹冰雾',dmg:5,dmgPerLvl:3,cd:0.5,cdPerLvl:0,range:8,rangePerLvl:0,fields:false,isFan:true,element:'wind',isBasic:true},
+  lamp:{name:'路灯',icon:'💡',cost:40,desc:'驱散迷雾，照亮黑暗',dmg:0,dmgPerLvl:0,cd:0,cdPerLvl:0,range:3,rangePerLvl:1,fields:false,isLamp:true,noUpgrade:false,maxLvl:15,element:'light'},
+  command:{name:'指挥部',icon:'🎯',cost:200,desc:'点击「设定优先目标」→ 拖拽框选炮塔（绿色框）→ 点击选择敌人。被选中炮塔优先攻击该目标（仅高射炮/特斯拉/核弹等单体炮塔生效，无法超出战场）',dmg:0,dmgPerLvl:0,cd:0,cdPerLvl:0,range:0,rangePerLvl:0,fields:false,element:'none',isCommand:true,noUpgrade:true},
+  defense:{name:'防御部',icon:'🛡️',cost:150,desc:'保护 3×3 内炮塔不被偷走和秒杀；升到 16 级（究极）后范围扩大到 7×7；耐久耗尽后需要充能',dmg:0,dmgPerLvl:0,cd:0,cdPerLvl:0,range:0,rangePerLvl:0,fields:false,element:'none',isDefense:true}
+};
+
+/* ========== 障碍数据（岩浆删除减速） ========== */
+const OBSTACLE_TYPES={
+  cactus:{name:'仙人掌',icon:'🌵',cost:10,desc:'阻挡并反伤',fields:true,unlockWave:1,upgrades:{thorns:{name:'反伤',base:4,perLvl:1.5},hp:{name:'耐久',base:150,perLvl:20}}},
+  stone:{name:'石头',icon:'🪨',cost:12,desc:'硬防，减速敌人',fields:true,unlockWave:1,upgrades:{hp:{name:'耐久',base:180,perLvl:22}}},
+  water:{name:'水',icon:'💧',cost:5,desc:'减速湿润并导电',indestructible:true,fields:true,unlockWave:2,upgrades:{slow:{name:'减速',base:0.25,perLvl:0.04}}},
+  lava:{name:'岩浆',icon:'🌋',cost:20,desc:'持续灼烧，过一阵就炸',fields:true,unlockWave:3,upgrades:{burn:{name:'灼烧',base:2.5,perLvl:0.7},hp:{name:'耐久',base:120,perLvl:25}}},
+  confusion:{name:'迷魂草',icon:'🌿',crystalCost:35,desc:'混乱敌人方向',fields:true,unlockWave:20,upgrades:{effect:{name:'效果',base:0.3,perLvl:0.05},hp:{name:'耐久',base:100,perLvl:30}}},
+  ice:{name:'冰晶',icon:'❄️',crystalCost:40,desc:'减速并降低敌人攻击',fields:true,unlockWave:20,upgrades:{slow:{name:'减速',base:0.2,perLvl:0.04},hp:{name:'耐久',base:160,perLvl:30}}},
+  metal:{name:'金属墙',icon:'🧱',crystalCost:45,desc:'防御强化',fields:true,unlockWave:22,upgrades:{hp:{name:'耐久',base:250,perLvl:60}}}
+};
+
+/* ========== 友军数据 ========== */
+const ALLY_TYPES={
+  suicide:{name:'敢死队',emoji:'💀',hp:30,damage:200,speed:200,color:'#ff5555',desc:'接近敌人时自爆，范围伤害',explode:true},
+  shield:{name:'盾牌师',emoji:'🛡️',hp:300,damage:30,speed:100,color:'#5588ff',desc:'高血量肉盾，阻挡怪物'},
+  repairman:{name:'修理师',emoji:'🔧',hp:60,damage:0,speed:140,color:'#40ff40',desc:'移动到最近受伤炮塔修复+10HP后消失，若满血则寻找下一目标'},
+  shadow:{name:'暗影刺客',emoji:'🗡️',hp:100,damage:80,speed:120,color:'#6633cc',desc:'无视护甲，对残血敌人伤害翻倍，永久隐形（仅路灯可显现）'},
+  marauder:{name:'掠夺者',emoji:'🏴',hp:150,damage:20,speed:70,color:'#884400',desc:'每次攻击10%概率偷5金币，20%概率使敌人攻击力-30%持续3秒'},
+  truck:{name:'大运',emoji:'🚚',hp:250,damage:30,speed:90,color:'#d4a373',desc:'碾压敌人，攻击判定大范围'},
+  sniper:{name:'狙击兵',emoji:'🎯',hp:40,damage:500,speed:150,color:'#44ffaa',desc:'跑到最近的炮塔后，把自己发射到血量最高的怪物身上并爆炸'},
+  drone_t2:{name:'T2-无人机',emoji:'🛸',hp:150,damage:35,speed:180,color:'#66ccff',flying:true,airOnly:true,desc:'飞行，不被地面单位打中（爆炸除外），只攻击空中敌人'},
+  laser_wing:{name:'激光僚机',emoji:'🤖',hp:80,damage:25,speed:200,color:'#44aaff',flying:true,dualTarget:true,desc:'飞行，发射短蓝激光（单体），可打空中与地面，优先攻击最高威胁'}
+};
+ALLY_TYPES.suicide.upgradeDesc = s => `自爆伤害 ${Math.floor(200*(s/50))}`;
+ALLY_TYPES.shield.upgradeDesc = s => `护盾师 HP ${Math.floor(300*(s/50))}`;
+ALLY_TYPES.repairman.upgradeDesc = s => `修复量 +${Math.floor(10*(s/50))}HP`;
+ALLY_TYPES.shadow.upgradeDesc = s => `暗杀伤害 ${Math.floor(80*(s/50))}（残血翻倍）`;
+ALLY_TYPES.marauder.upgradeDesc = s => `掠夺伤害 ${Math.floor(20*(s/50))} · 偷钱概率 +${Math.floor(10*(s/50))}%`;
+ALLY_TYPES.truck.upgradeDesc = s => `碾压帧伤 ${Math.floor(30*(s/50))}/s`;
+ALLY_TYPES.sniper.upgradeDesc = s => `狙击爆炸 ${Math.floor(500*(s/50))}`;
+ALLY_TYPES.drone_t2.upgradeDesc = s => `对空伤害 ${Math.floor(35*(s/50))}`;
+ALLY_TYPES.laser_wing.upgradeDesc = s => `激光伤害 ${Math.floor(25*(s/50))}`;
+
+/* ========== 网格初始化 ========== */
+function initGrid(){
+  grid=[];
+  for(let r=0;r<ROWS;r++){
+    grid[r]=[];
+    for(let c=0;c<COLS;c++) grid[r][c]={
+      holeWaves:0,
+      row:r, col:c,
+      type:'empty',isPath:false,pathConnections:0,
+      towerType:null,towerLevel:0,towerAttackCD:0,towerDirection:null,
+      obstacleType:null,obstacleLevel:0,obstacleHP:0,obstacleMaxHP:0,
+      stunned:0,barracksCD:0,barracksUnitType:null,
+      atkLvl:0,cdLvl:0,rangeLvl:0,overloadTimer:0,obstacleOverload:0,
+      wireNetPair:null,obstacleUpgrades:{},regenTimer:0,
+      towerHP:0,towerMaxHP:0,protected:0,towerRepairCD:0,
+      atkDebuffTimer:0,cdDebuffTimer:0,springCD:0,wasPath:false,
+      priorityTarget:null,
+      defenseProtected:false,defenseSource:null,
+      defenseCharge:0,defenseMaxCharge:0,defenseRechargeTimer:0,
+      commandTowers:null,commandTarget:null
+    };
+  }
+  grid[START_ROW][START_COL].type='path'; grid[START_ROW][START_COL].isPath=true;
+  grid[END_ROW][END_COL].type='path'; grid[END_ROW][END_COL].isPath=true;
+}
+
+/* ========== 路径工具 ========== */
+function countPathNeighbors(r,c){let n=0;for(const [dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc].isPath)n++;}return n;}
+function getPathNeighbors(r,c){const res=[];for(const [dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc].isPath)res.push([nr,nc]);}return res;}
+function canDig(r,c){
+  if(grid[r][c].isPath||grid[r][c].type==='tower'||grid[r][c].type==='obstacle')return false;
+  const nb=getPathNeighbors(r,c);
+  if(nb.length>2||nb.length===0)return false;
+  for(const [nr,nc] of nb)if(grid[nr][nc].pathConnections+1>2)return false;
+  if(nb.length===2){const [n1,n2]=nb;if(arePathCellsConnected(n1[0],n1[1],n2[0],n2[1],r,c))return false;}
+  return true;
+}
+function arePathCellsConnected(r1,c1,r2,c2,er,ec){
+  const vis=new Set();const q=[[r1,c1]];vis.add(`${r1},${c1}`);
+  while(q.length){
+    const [cr,cc]=q.shift();
+    if(cr===r2&&cc===c2)return true;
+    for(const [dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=cr+dr,nc=cc+dc;
+      if(nr===er&&nc===ec)continue;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc].isPath&&!vis.has(`${nr},${nc}`)){vis.add(`${nr},${nc}`);q.push([nr,nc]);}
+    }
+  }
+  return false;
+}
+function digCell(r,c){
+  if(!canDig(r,c))return false;
+  grid[r][c].type='path';grid[r][c].isPath=true;grid[r][c].pathConnections=countPathNeighbors(r,c);
+  for(const [nr,nc] of getPathNeighbors(r,c))grid[nr][nc].pathConnections=countPathNeighbors(nr,nc);
+  grid[START_ROW][START_COL].pathConnections=countPathNeighbors(START_ROW,START_COL);
+  grid[END_ROW][END_COL].pathConnections=countPathNeighbors(END_ROW,END_COL);
+  return true;
+}
+function digCellWithHistory(r,c){if(digCell(r,c)){digHistory.push([r,c]);return true;}return false;}
+function undoDig(){
+  if(gamePhase!=='digging')return;
+  if(digHistory.length===0)return;
+  const [r,c]=digHistory.pop();
+  grid[r][c].type='empty';grid[r][c].isPath=false;grid[r][c].pathConnections=0;
+  const nb=getPathNeighbors(r,c);
+  for(const [nr,nc] of nb)grid[nr][nc].pathConnections=countPathNeighbors(nr,nc);
+  grid[START_ROW][START_COL].pathConnections=countPathNeighbors(START_ROW,START_COL);
+  grid[END_ROW][END_COL].pathConnections=countPathNeighbors(END_ROW,END_COL);
+  pathOrder=[];pathCorners=[];
+  updateUI();
+}
+function checkStartEndConnected(){
+  const vis=new Set();const q=[[START_ROW,START_COL]];vis.add(`${START_ROW},${START_COL}`);
+  while(q.length){
+    const [cr,cc]=q.shift();
+    if(cr===END_ROW&&cc===END_COL)return true;
+    for(const [dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=cr+dr,nc=cc+dc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc].isPath&&!vis.has(`${nr},${nc}`)){vis.add(`${nr},${nc}`);q.push([nr,nc]);}
+    }
+  }
+  return false;
+}
+function computePathCorners(){
+  pathCorners=[];if(pathOrder.length<2)return;
+  pathCorners.push(0);
+  for(let i=1;i<pathOrder.length-1;i++){
+    const [pr,pc]=pathOrder[i-1];const [cr,cc]=pathOrder[i];const [nr,nc]=pathOrder[i+1];
+    if((cr-pr)!==(nr-cr)||(cc-pc)!==(nc-cc))pathCorners.push(i);
+  }
+  pathCorners.push(pathOrder.length-1);
+}
+function computePathOrder(){
+  const vis=new Set();const parent={};const q=[[START_ROW,START_COL]];vis.add(`${START_ROW},${START_COL}`);
+  let found=false;
+  while(q.length&&!found){
+    const [cr,cc]=q.shift();
+    if(cr===END_ROW&&cc===END_COL){found=true;break;}
+    for(const [dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=cr+dr,nc=cc+dc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&grid[nr][nc].isPath&&!vis.has(`${nr},${nc}`)){
+        vis.add(`${nr},${nc}`);parent[`${nr},${nc}`]=[cr,cc];q.push([nr,nc]);
+      }
+    }
+  }
+  pathOrder=[];
+  if(found){let cur=[END_ROW,END_COL];while(cur){pathOrder.unshift(cur);cur=parent[`${cur[0]},${cur[1]}`]||null;}}
+  if(pathOrder.length>0)computePathCorners();
+  return pathOrder.length>0;
+}
+function startDefensePhase(){
+  if(!checkStartEndConnected()||!computePathOrder())return;
+  if(gameMode==='season'&&seasonSubMode==='fortress'&&fortressPhase==='digging')return;
+  gamePhase='defense';digHistory=[];waveNumber=0;waveActive=false;waveBreakTimer=2;updateUI();
+}
+
+function damageBase(amount,sourceName){
+  const dmg=Math.max(0,amount);
+  if(gameMode==='season'&&seasonSubMode==='experience'){seasonScore=Math.max(0,seasonScore-dmg*2);updateSeasonHUD();return;}
+  if(devMode){
+    devDamageLog.unshift({time:new Date().toLocaleTimeString(),source:sourceName||'未知',damage:Math.floor(dmg)});
+    if(devDamageLog.length>50)devDamageLog.pop();
+    return;
+  }
+  if(baseInvincible>0)return;
+  baseHP-=dmg;
+  if(baseHP<0)baseHP=0;
+  updateUI();
+  if(baseHP<=0)triggerGameOver();
+}
+
+/* ========== Enemy 类 ========== */
+class Enemy{
+  constructor(typeKey,level){
+    const t=ENEMY_TYPES[typeKey]||ENEMY_TYPES.zombie;
+    this.typeKey=typeKey; this.name=t.name; this.emoji=t.emoji; this.level=Math.min(MAX_LEVEL,level);
+    let spdBuff=1+bossBuffLevels.speed*0.10;
+    let hpBuff=1+bossBuffLevels.health*0.25;
+    this.maxHP=Math.floor(t.hp*(1+this.level*0.2)*hpBuff);
+    this.hp=this.maxHP;
+    this.speed=t.speed*(1+this.level*0.08)*spdBuff;
+    this.armor=Math.floor(t.armor+this.level*2)+bossBuffLevels.armor*3;
+    this.damage=Math.floor(t.damage+this.level*1.2);
+    this.bounty=Math.floor(t.bounty+this.level*0.4);
+    this.special=t.special||null; this.color=t.color;
+    this.pathIndex=0; this.x=0; this.y=0; this.subX=0; this.subY=0;
+    this.alive=true; this.reachedEnd=false; this.removeTimer=0;
+    this.frozen=0; this.slowed=0; this.slowAmount=0; this.burning=0; this.burnDPS=0; this.stunned=0;
+    this.wet=0; this.shocked=0; this.corrosionStacks=0; this.splitStage=0; this.flashTimer=0;
+    this.flying=t.flying||false; this.poisoned=0; this.poisonDPS=0; this.poisonStacks=0;
+    this.healCD=2; this.healAbility=(t.special==='healer');
+    this.shockCD=0; this.shieldHP=(t.special==='shield')?80:0;
+    this.summonCD=0; this.teleportCD=0; this.reflectCD=0;
+    this.reflectChance=(t.special==='reflect')?0.25:0;
+    this.ultimateAura=(this.typeKey.startsWith('ultimate_'))?true:false;
+    
+this.isBoss=(typeKey==='boss'||typeKey==='boss_jiawei'||typeKey==='boss_bomber'||typeKey==='boss_dancer'||typeKey==='boss_scholar'||NEW_BOSS_KEYS.includes(typeKey));
+this.isFriendly = false;        // ★ 迷魂草转化
+this.friendlyAtkCD = 0;         // ★ 友方攻击CD
+
+this.invisible=(typeKey==='ghost'||typeKey==='ultimate_ghost');
+    this.straightToBase=(t.special==='straight'||t.special==='carrier');
+    this.isJiawei=(typeKey==='boss_jiawei');
+    this.isBomberBoss=(typeKey==='boss_bomber');
+    this.isDancer=(typeKey==='boss_dancer');
+    this.isScholar=(typeKey==='boss_scholar');
+    this.shieldAuraCD=0; this._ultimateBuffed=false;
+    this.bomberCD=0; this.thiefStealCD=0;
+    if(this.isBoss||this.isJiawei) bossEnemy=this;
+    this.jiaweiSkillCD=0; this.bossSkillCD=0;
+    this.immuneTowerType=null;
+    this.tankFireCD=0;
+    this.firePause=0;
+    this.bomberSummonCD=3; this.bomberBombCD=5;
+    this.dancerSummonCD=5;
+    this.bossHealCD=5;
+    this.superTombSummonCD=2;
+    this.atkDebuffTimer=0; this.atkDebuffAmount=0;
+    this.stolenByMarauder=false;
+     if(this.isBomberBoss){this.straightToBase=true;this.flying=true;}
+
+    // ★ v10.4 新Boss初始化
+    this.immuneFrozen = t.immuneFrozen||false;
+    this.invincible = false;
+    // 恶食之蛇
+    this.wanderAngle = Math.random()*Math.PI*2;
+    this.eating = false; this.eatTimer = 0; this.eatTarget = null;
+    this.devouredTowers = []; this.devouredMarkers = []; this.devourCount = 0;
+    // 南极帝王鹅
+    this.state = 'idle';
+    this.chargeTimer = 0; this.dashTimer = 0; this.stunTimer = 0;
+    this.chargeTarget = null; this.dashAngle = 0;
+    // 水晶女王
+    this.crystalSpikes = []; this.summonedInitial = false;
+    this.elapsedTime = 0; this.resummonTimer = 0;
+    // 林易秦
+    this.debuffCD = 4; this.hitCount = 0; this.teleportFlash = 0;
+    // 镜像管理者
+    this.mirrorCD = 6; this.mirrors = [];
+    // 减益字典（炮塔用）
+    // (只对林易秦的受害者赋值，此处不设)
+
+    if(t.isNewBoss){
+      this.pathIndex = 99999;
+      this.x = canvas.width/2 + (Math.random()-0.5)*200;
+      this.y = canvas.height/2 + (Math.random()-0.5)*200;
+      this.subX = this.x; this.subY = this.y;
+      if(typeKey==='crystal_spike'){ this.pathIndex=-1; }
+    } else {
+      this.initPosition();
+    }
+  }
+  initPosition(){
+    if(pathOrder.length>0&&this.pathIndex>=0){
+      const [r,c]=pathOrder[this.pathIndex];
+      this.x=c*CELL_SIZE+12;this.y=r*CELL_SIZE+12;this.subX=this.x;this.subY=this.y;
+    }
+  }
+  // ★ 掠夺者减攻 debuff 生效方法
+  getAtkDamage(){
+    let d=this.damage;
+    if(this.atkDebuffTimer>0){d=Math.floor(d*(1-(this.atkDebuffAmount||0)));}
+    return Math.max(1,d);
+  }
+  update(dt){
+    if(this.reachedEnd){this.removeTimer-=dt;if(this.isBoss&&this.removeTimer<=0)bossEnemy=null;return;}
+    if(!this.alive){if(this.isBoss)bossEnemy=null;return;}
+
+    // 墓碑类
+    if(this.typeKey==='tombstone'){
+      if(this.frozen>0) this.frozen-=dt;
+      if(this.burning>0){this.burning-=dt;this.takeDamage(this.burnDPS*dt,'fire');}
+      if(this.poisoned>0){this.poisoned-=dt;this.takeDamage(this.poisonDPS*dt,'poison');}
+      if(!this.tombstoneSummonCD) this.tombstoneSummonCD=3;
+      this.tombstoneSummonCD-=dt;
+      if(this.tombstoneSummonCD<=0){
+        this.tombstoneSummonCD=3;
+        const sz=new Enemy('zombie',Math.min(MAX_LEVEL,this.level));
+        sz.x=this.x;sz.y=this.y;sz.subX=this.x;sz.subY=this.y;sz.pathIndex=0;sz.straightToBase=true;
+        enemies.push(sz);
+        spawnParticles(this.x,this.y,'#666666',5);
+      }
+      return;
+    }
+    if(this.typeKey==='super_tombstone'){
+      if(this.frozen>0) this.frozen-=dt;
+      if(this.burning>0){this.burning-=dt;this.takeDamage(this.burnDPS*dt,'fire');}
+      if(this.poisoned>0){this.poisoned-=dt;this.takeDamage(this.poisonDPS*dt,'poison');}
+      this.superTombSummonCD-=dt;
+      if(this.superTombSummonCD<=0){
+        this.superTombSummonCD=2;
+        const ultTypes=Object.keys(ENEMY_TYPES).filter(k=>k.startsWith('ultimate_'));
+        const randType=ultTypes[Math.floor(Math.random()*ultTypes.length)];
+        const e=new Enemy(randType,Math.min(MAX_LEVEL,this.level));
+        e.x=this.x;e.y=this.y;e.subX=this.x;e.subY=this.y;e.pathIndex=0;e.straightToBase=true;
+        enemies.push(e);
+        spawnParticles(this.x,this.y,'#8b0000',8);
+      }
+      return;
+    }
+    if(this.special==='weather'&&!this.weatherSet){
+      this.weatherSet=true;
+      const types=['rain','fog','night','snow','hail','thunderstorm'];
+      setWeather(types[Math.floor(Math.random()*types.length)]);
+      spawnParticles(this.x,this.y,'#88ccff',10);
+    }
+
+    // 通用状态
+    if(this.frozen>0){this.frozen-=dt;if(this.frozen<=0)this.frozen=0;}
+    if(this.stunned>0){this.stunned-=dt;if(this.stunned<=0)this.stunned=0;}
+    if(this.burning>0){this.burning-=dt;let dmg=this.burnDPS*dt;if(this.frozen>0&&this.burning>0)dmg*=1.25;this.takeDamage(dmg,'fire');if(this.burning<=0){this.burning=0;this.burnDPS=0;}}
+    if(this.poisoned>0){this.poisoned-=dt;let dmg=this.poisonDPS*dt*(1+this.poisonStacks*0.3);this.takeDamage(dmg,'poison');if(this.poisoned<=0){this.poisoned=0;this.poisonDPS=0;this.poisonStacks=0;}}
+    if(this.shocked>0){this.shocked-=dt;if(this.shocked<=0){this.shocked=0;this.corrosionStacks=0;}}
+    if(this.wet>0){this.wet-=dt;if(this.wet<=0)this.wet=0;}
+    if(this.slowed>0&&this.special!=='immuneslow'){this.slowed-=dt;if(this.slowed<=0){this.slowed=0;this.slowAmount=0;}}
+    if(this.flashTimer>0)this.flashTimer-=dt;
+    if(this.teleportCD>0){this.teleportCD-=dt;if(this.teleportCD<0)this.teleportCD=0;}
+    if(this.atkDebuffTimer>0){this.atkDebuffTimer-=dt;if(this.atkDebuffTimer<=0){this.atkDebuffTimer=0;this.atkDebuffAmount=0;}}
+
+    if(this.ultimateAura){for(const e of enemies){if(e===this||!e.alive||e._ultimateBuffed)continue;e.speed*=1.05;e.armor+=1;e._ultimateBuffed=true;}}
+        if(this.healAbility){
+      const isUltHealer = (this.typeKey === 'ultimate_healer');
+      this.healCD -= dt;
+      if(this.healCD <= 0){
+        this.healCD = isUltHealer ? 1.0 : 1.5;
+        const healRange = CELL_SIZE * (isUltHealer ? 9 : 7);
+        const healPct   = isUltHealer ? 0.35 : 0.20;
+        for(const e of enemies.slice()){
+          if(e===this || !e.alive) continue;
+          if(Math.hypot(e.x-this.x, e.y-this.y) < healRange){
+            e.hp = Math.min(e.maxHP, e.hp + e.maxHP * healPct);
+          }
+        }
+        spawnParticles(this.x, this.y, '#44ff44', 8);
+      }
+    }
+    if(this.special==='splitter' && !this.isSplitChild){
+      this.splitterCD = (this.splitterCD !== undefined ? this.splitterCD : 2) - dt;
+      if(this.splitterCD <= 0){
+        this.splitterCD = 2;
+        this.splitCount = (this.splitCount||0) + 1;
+        if(this.splitCount <= 3){
+          const b = new Enemy(this.typeKey, Math.max(1, this.level-2));
+          b.maxHP = Math.floor(this.maxHP * 0.5);
+          b.hp = b.maxHP;
+          b.pathIndex = this.pathIndex;
+          b.subX = this.x + (Math.random()-0.5)*20;
+          b.subY = this.y + (Math.random()-0.5)*20;
+          b.x = b.subX; b.y = b.subY;
+          b.special = 'splitter';
+          b.isSplitChild = true;
+          enemies.push(b);
+          spawnParticles(this.x, this.y, '#4169e1', 10);
+        }
+      }
+    }
+    if(this.special==='shield'){this.shieldAuraCD-=dt;if(this.shieldAuraCD<=0){this.shieldAuraCD=1.5;for(const e of enemies.slice()){if(e===this||!e.alive)continue;if(Math.hypot(e.x-this.x,e.y-this.y)<CELL_SIZE*3){if(e.shieldHP>0)e.shieldHP=Math.min(e.maxHP,e.shieldHP+20);}}}}
+    if(this.special==='shocker'||this.isBoss){
+      this.shockCD-=dt;
+      if(this.shockCD<=0){
+        this.shockCD=2.5;
+        for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+          const cell=grid[r][c];
+          if(cell.type==='tower'&&Math.hypot(this.x-(c*CELL_SIZE+12),this.y-(r*CELL_SIZE+12))<CELL_SIZE*3.5){
+            if(cell.protected>0) continue;
+            if(Math.random()<0.5)cell.stunned=4;
+          }
+        }
+      }
+    }
+    if(this.special==='summoner'){this.summonCD-=dt;if(this.summonCD<=0){this.summonCD=2;const sz=new Enemy('zombie',Math.min(MAX_LEVEL,this.level-2));if(this.straightToBase)sz.straightToBase=true;enemies.push(sz);spawnParticles(this.x,this.y,'#9370db',10);}}
+    if(this.special==='carrier'&&this.straightToBase){
+      if(!this.carrierAuraCD) this.carrierAuraCD=0.5;
+      this.carrierAuraCD-=dt;
+      if(this.carrierAuraCD<=0){
+        this.carrierAuraCD=0.5;
+        for(const e of enemies){
+          if(e===this||!e.alive||e.typeKey==='tombstone') continue;
+          const dist=Math.hypot(e.x-this.x,e.y-this.y);
+          if(dist<CELL_SIZE*4){
+            if(e.pathIndex>=0&&e.pathIndex<pathOrder.length-1&&!e.straightToBase){
+              e.pathIndex=Math.min(pathOrder.length-1,e.pathIndex+1);
+              const [nr,nc]=pathOrder[e.pathIndex];
+              e.subX=nc*CELL_SIZE+12;e.subY=nr*CELL_SIZE+12;e.x=e.subX;e.y=e.subY;
+              spawnParticles(e.x,e.y,'#ccddff',3);
+            } else if(e.straightToBase){
+              e.subX+=(this.x>e.subX?1:-1)*CELL_SIZE*0.3;
+              e.subY+=(this.y>e.subY?1:-1)*CELL_SIZE*0.3;
+            }
+          }
+        }
+      }
+    }
+    if(this.special==='teleporter'&&pathOrder.length>1&&pathCorners.length>0){
+      this.teleportCD-=dt;
+      if(this.teleportCD<=0){
+        this.teleportCD=5;
+        let nextCornerIdx=this.pathIndex;
+        for(const ci of pathCorners){if(ci>this.pathIndex){nextCornerIdx=ci;break;}}
+        if(nextCornerIdx<=this.pathIndex)nextCornerIdx=Math.min(pathOrder.length-1,this.pathIndex+3);
+        this.pathIndex=nextCornerIdx;
+        this.subX=pathOrder[this.pathIndex][1]*CELL_SIZE+12;
+        this.subY=pathOrder[this.pathIndex][0]*CELL_SIZE+12;
+        spawnParticles(this.x,this.y,'#20b2aa',15);
+        this.x=this.subX;this.y=this.subY;
+      }
+    }
+
+    // 直线冲基地
+    if(this.typeKey==='devouring_serpent'){ this._updateDevouringSerpent(dt); return; }
+    if(this.typeKey==='emperor_goose'){ this._updateEmperorGoose(dt); return; }
+    if(this.typeKey==='crystal_queen'){ this._updateCrystalQueen(dt); return; }
+    if(this.typeKey==='lin_yiqin'){ this._updateLinYiqin(dt); return; }
+    if(this.typeKey==='mirror_administrator'){ this._updateMirrorAdmin(dt); return; }
+    if(this.typeKey==='crystal_spike'){ this._updateCrystalSpike(dt); return; }
+    if(this.typeKey==='ultimate_thief'){ this._updateUltimateThief(dt); return; }
+    if(this.isFriendly){
+      let tgt=null, bd=Infinity;
+      for(const e of enemies){
+        if(e===this||!e.alive||e.isFriendly)continue;
+        const dd=Math.hypot(e.x-this.x,e.y-this.y);
+        if(dd<bd){bd=dd;tgt=e;}
+      }
+      if(tgt){
+        const dx=tgt.x-this.x, dy=tgt.y-this.y;
+        const dist=Math.hypot(dx,dy); if(dist>0){
+          this.x += (dx/dist) * 80 * dt; this.y += (dy/dist) * 80 * dt;
+        }
+        if(dist < 30){
+          tgt.takeDamage(this.damage,'physical');
+          this.friendlyAtkCD = 0.6;
+          spawnParticles(this.x,this.y,'#ff5588',8);
+        }
+      }
+      this.friendlyAtkCD = Math.max(0,this.friendlyAtkCD-dt);
+      return;
+    }
+
+    if(this.frozen>0 || this.stunned>0) return;
+
+    // 普通小怪移动
+    if(pathOrder.length===0 || this.pathIndex >= pathOrder.length-1){
+      this.reachedEnd = true; this.removeTimer = 1.5; this.alive = false; damageBase(this.damage,'enemy_reach');
+      return;
+    }
+
+    const [r,c] = pathOrder[Math.min(this.pathIndex, pathOrder.length-1)];
+    const targetX = c*CELL_SIZE+12;
+    const targetY = r*CELL_SIZE+12;
+    const dx = targetX - this.x;
+    const dy = targetY - this.y;
+    const dist = Math.hypot(dx,dy);
+    if(dist>0.1){
+      const speed = this.speed * (this.slowed>0 ? (1-Math.min(0.8,this.slowAmount)) : 1);
+      const step = speed * dt * 60;
+      const nx = this.x + (dx/dist) * Math.min(step,dist);
+      const ny = this.y + (dy/dist) * Math.min(step,dist);
+      this.x = nx; this.y = ny;
+    }
+    if(dist<=2){
+      this.pathIndex = Math.min(pathOrder.length-1, this.pathIndex + 1);
+      this.initPosition();
+    }
+  }
+}
+
+window.Enemy = Enemy;
+
+</script>
+</body>
+</html>
